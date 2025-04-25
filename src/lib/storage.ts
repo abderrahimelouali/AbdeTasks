@@ -1,4 +1,3 @@
-
 import { DailyTask, StudySession, EnglishSession, QuranProgress } from "@/types";
 
 const TASKS_KEY = 'abdetask_dailytasks';
@@ -6,6 +5,9 @@ const STUDY_SESSIONS_KEY = 'abdetask_study_sessions';
 const ENGLISH_SESSIONS_KEY = 'abdetask_english_sessions';
 const QURAN_PROGRESS_KEY = 'abdetask_quran_progress';
 const NOFAP_STREAK_KEY = 'abdetask_nofap_streak';
+const NOFAP_LAST_CHECK_KEY = 'abdetask_nofap_lastcheck';
+const NOFAP_WEEKLY_FAILURES_KEY = 'abdetask_nofap_weekly_failures';
+const CATEGORIES_KEY = 'abdetask_custom_categories';
 
 export const storage = {
   getDailyTasks: (): DailyTask[] => {
@@ -96,5 +98,37 @@ export const storage = {
   
   resetNofapStreak: (): void => {
     localStorage.setItem(NOFAP_STREAK_KEY, '0');
+  },
+  
+  getNofapLastCheck: (): string | null => {
+    return localStorage.getItem(NOFAP_LAST_CHECK_KEY);
+  },
+  
+  saveNofapLastCheck: (date: string): void => {
+    localStorage.setItem(NOFAP_LAST_CHECK_KEY, date);
+  },
+  
+  getNofapWeeklyFailures: (): number => {
+    const failures = localStorage.getItem(NOFAP_WEEKLY_FAILURES_KEY);
+    return failures ? parseInt(failures) : 0;
+  },
+  
+  saveNofapWeeklyFailures: (failures: number): void => {
+    localStorage.setItem(NOFAP_WEEKLY_FAILURES_KEY, failures.toString());
+  },
+  
+  resetNofapWeeklyFailures: (): void => {
+    localStorage.setItem(NOFAP_WEEKLY_FAILURES_KEY, '0');
+  },
+
+  getCustomCategories: (): { name: string; color: string; }[] => {
+    const categoriesJson = localStorage.getItem(CATEGORIES_KEY);
+    return categoriesJson ? JSON.parse(categoriesJson) : [];
+  },
+  
+  saveCustomCategory: (category: { name: string; color: string; }): void => {
+    const categories = storage.getCustomCategories();
+    categories.push(category);
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
   }
 };

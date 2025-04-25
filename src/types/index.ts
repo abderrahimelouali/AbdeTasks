@@ -1,11 +1,10 @@
-
 export type PrayerStatus = 'not-prayed' | 'on-time' | 'late' | 'missed';
 
 export type PrayerName = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 
 export type MoodType = 'great' | 'good' | 'neutral' | 'bad' | 'terrible';
 
-export type CategoryType = 'nofap' | 'prayer' | 'quran' | 'study' | 'english';
+export type CategoryType = 'nofap' | 'prayer' | 'quran' | 'study' | 'english' | string;
 
 export type EnglishSkill = 'listening' | 'speaking' | 'reading' | 'writing' | 'grammar' | 'mixed' | 'rest';
 
@@ -50,3 +49,8 @@ export type DailyTask = {
   english: EnglishSession | null;
   mood: MoodType | null;
 };
+
+export interface CustomCategory {
+  name: string;
+  color: string;
+}
