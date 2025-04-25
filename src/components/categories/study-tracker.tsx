@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,17 +14,33 @@ interface StudyTrackerProps {
 }
 
 export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps) {
-  const [topic, setTopic] = useState<string>(studySession?.topic || "");
-  const [typeOfStudy, setTypeOfStudy] = useState<string>(studySession?.type || "");
-  const [duration, setDuration] = useState<number>(studySession?.duration || 1);
-  const [notes, setNotes] = useState<string>(studySession?.notes || "");
+  const [topic, setTopic] = useState<string>("");
+  const [typeOfStudy, setTypeOfStudy] = useState<string>("");
+  const [duration, setDuration] = useState<number>(1);
+  const [notes, setNotes] = useState<string>("");
+  
+  // Load session data when editing
+  useEffect(() => {
+    if (studySession) {
+      setTopic(studySession.topic);
+      setTypeOfStudy(studySession.type);
+      setDuration(studySession.duration);
+      setNotes(studySession.notes);
+    } else {
+      // Reset form when adding new
+      setTopic("");
+      setTypeOfStudy("");
+      setDuration(1);
+      setNotes("");
+    }
+  }, [studySession]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const session: StudySession = {
       id: studySession?.id || generateId(),
-      date: new Date().toISOString().split('T')[0],
+      date: studySession?.date || new Date().toISOString().split('T')[0],
       topic,
       type: typeOfStudy,
       duration,
@@ -35,12 +51,12 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
   };
   
   return (
-    <Card className="border-study/50">
-      <CardHeader className="bg-study/10 pb-2">
-        <CardTitle className="text-study flex items-center gap-2">
-          <span>📚</span> Study Progress
+    <Card className={studySession ? "" : "border-study/50"}>
+      <CardHeader className={studySession ? "pb-2" : "bg-study/10 pb-2"}>
+        <CardTitle className={studySession ? "" : "text-study flex items-center gap-2"}>
+          {!studySession && <span>📚</span>} {studySession ? "Edit Study Session" : "Study Progress"}
         </CardTitle>
-        {studySession && (
+        {!studySession && studySession && (
           <CardDescription>
             Last: {studySession.topic} ({studySession.duration}h)
           </CardDescription>
@@ -56,6 +72,7 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="e.g. JavaScript Review"
+                required
               />
             </div>
             
@@ -66,6 +83,7 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
                 value={typeOfStudy}
                 onChange={(e) => setTypeOfStudy(e.target.value)}
                 placeholder="e.g. Review, New Learning"
+                required
               />
             </div>
           </div>
@@ -79,6 +97,7 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
               step={0.5}
               value={duration}
               onChange={(e) => setDuration(parseFloat(e.target.value))}
+              required
             />
           </div>
           
@@ -94,7 +113,7 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
           </div>
           
           <Button type="submit" className="w-full bg-study hover:bg-study/90">
-            Save Study Session
+            {studySession ? "Update Study Session" : "Save Study Session"}
           </Button>
         </form>
       </CardContent>
