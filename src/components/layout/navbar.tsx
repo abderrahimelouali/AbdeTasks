@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileNav } from "./mobile-nav";
 
 export function Navbar() {
   return (
@@ -36,9 +37,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <div className="md:hidden">
-            <Button variant="ghost" size="sm" className="text-base">
-              ☰
-            </Button>
+            <MobileNav />
           </div>
         </div>
       </div>
