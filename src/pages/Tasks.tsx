@@ -1,23 +1,27 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { storage } from "@/lib/storage";
-import { DailyTask, CategoryType } from "@/types";
+import { DailyTask, CategoryType, StudySession } from "@/types";
 import { getMoodEmoji, getCategoryBgClass } from "@/lib/utils";
+import { StudyTracker } from "@/components/categories/study-tracker";
+import { Edit } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<DailyTask[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryType | "all">("all");
+  const [editingStudySession, setEditingStudySession] = useState<StudySession | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   useEffect(() => {
     const loadedTasks = storage.getDailyTasks();
-    // Sort tasks by date (newest first)
     loadedTasks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setTasks(loadedTasks);
     setFilteredTasks(loadedTasks);
@@ -26,12 +30,11 @@ const TasksPage = () => {
   useEffect(() => {
     let result = tasks;
     
-    // Apply category filter
     if (categoryFilter !== "all") {
       result = result.filter(task => {
         switch(categoryFilter) {
-          case "nofap": return true; // Always included
-          case "prayer": return true; // Always included
+          case "nofap": return true;
+          case "prayer": return true;
           case "quran": return !!task.quran;
           case "study": return !!task.study;
           case "english": return !!task.english;
@@ -40,7 +43,6 @@ const TasksPage = () => {
       });
     }
     
-    // Apply search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(task => {
@@ -56,6 +58,27 @@ const TasksPage = () => {
     
     setFilteredTasks(result);
   }, [tasks, categoryFilter, searchTerm]);
+  
+  const handleStudySessionEdit = (session: StudySession) => {
+    setEditingStudySession(session);
+    setIsDialogOpen(true);
+  };
+  
+  const handleStudySessionSave = (updatedSession: StudySession) => {
+    const updatedTasks = tasks.map(task => {
+      if (task.date === updatedSession.date) {
+        return { ...task, study: updatedSession };
+      }
+      return task;
+    });
+    
+    setTasks(updatedTasks);
+    setIsDialogOpen(false);
+    toast({
+      title: "Study session updated",
+      description: `${updatedSession.topic} has been updated`,
+    });
+  };
   
   const renderTaskCard = (task: DailyTask) => {
     return (
@@ -100,9 +123,18 @@ const TasksPage = () => {
               )}
               
               {task.study && (
-                <div className="mb-2">
-                  <span className="font-medium">Study:</span> {task.study.topic} - {task.study.duration}h
-                  {task.study.notes && <p className="text-sm text-muted-foreground">{task.study.notes}</p>}
+                <div className="mb-2 flex items-start justify-between">
+                  <div>
+                    <span className="font-medium">Study:</span> {task.study.topic} - {task.study.duration}h
+                    {task.study.notes && <p className="text-sm text-muted-foreground">{task.study.notes}</p>}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleStudySessionEdit(task.study!)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
               
@@ -165,6 +197,18 @@ const TasksPage = () => {
             </div>
           )}
         </div>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Study Session</DialogTitle>
+            </DialogHeader>
+            <StudyTracker 
+              studySession={editingStudySession} 
+              onSessionSave={handleStudySessionSave}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StudySession } from "@/types";
 import { generateId } from "@/lib/utils";
+import { storage } from "@/lib/storage";
 
 interface StudyTrackerProps {
   studySession: StudySession | null;
@@ -46,6 +47,16 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
       duration,
       notes
     };
+    
+    // Save to storage
+    storage.saveStudySession(session);
+    
+    // Update daily task if it exists for this date
+    const dailyTask = storage.getDailyTaskByDate(session.date);
+    if (dailyTask) {
+      dailyTask.study = session;
+      storage.saveDailyTask(dailyTask);
+    }
     
     onSessionSave(session);
   };
