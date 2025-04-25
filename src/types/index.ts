@@ -1,3 +1,4 @@
+
 export type PrayerStatus = 'not-prayed' | 'on-time' | 'late' | 'missed';
 
 export type PrayerName = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
@@ -19,6 +20,7 @@ export type QuranProgress = {
   startVerse: number;
   endVerse: number;
   completed: boolean;
+  isReview?: boolean;
 };
 
 export type StudySession = {

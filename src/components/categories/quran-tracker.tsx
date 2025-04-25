@@ -166,6 +166,56 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
       setMemorizedVersesBySurah(memorizedCounts);
     }
   }, []);
+
+  // Update endVerse when surah changes to prevent exceeding max verses
+  useEffect(() => {
+    const maxVerses = WARSH_SURAH_VERSES[surah] || 0;
+    if (endVerse > maxVerses) {
+      setEndVerse(maxVerses);
+    }
+    if (startVerse > maxVerses) {
+      setStartVerse(1);
+    }
+  }, [surah]);
+
+  const handleInputChange = (field: 'startVerse' | 'endVerse', value: string) => {
+    const numValue = parseInt(value) || 1;
+    const maxVerses = WARSH_SURAH_VERSES[surah] || 0;
+
+    if (field === 'startVerse') {
+      if (numValue < 1) {
+        setStartVerse(1);
+      } else if (numValue > maxVerses) {
+        setStartVerse(maxVerses);
+        toast({
+          description: `${surah} only has ${maxVerses} verses in Warsh narration.`,
+          variant: "destructive"
+        });
+      } else {
+        setStartVerse(numValue);
+        // If start verse is greater than end verse, update end verse
+        if (numValue > endVerse) {
+          setEndVerse(numValue);
+        }
+      }
+    } else { // endVerse
+      if (numValue < startVerse) {
+        setEndVerse(startVerse);
+        toast({
+          description: `End verse cannot be less than start verse (${startVerse}).`,
+          variant: "destructive"
+        });
+      } else if (numValue > maxVerses) {
+        setEndVerse(maxVerses);
+        toast({
+          description: `${surah} only has ${maxVerses} verses in Warsh narration.`,
+          variant: "destructive"
+        });
+      } else {
+        setEndVerse(numValue);
+      }
+    }
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,6 +253,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
     const maxVerses = WARSH_SURAH_VERSES[surah] || 0;
     
     if (endVerse > maxVerses) {
+      setEndVerse(maxVerses);
       toast({
         description: `${surah} has only ${maxVerses} verses in Warsh narration.`,
         variant: "destructive"
@@ -327,8 +378,9 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                   id="startVerse"
                   type="number"
                   min={1}
+                  max={WARSH_SURAH_VERSES[surah]}
                   value={startVerse}
-                  onChange={(e) => setStartVerse(parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('startVerse', e.target.value)}
                   disabled={isReview}
                 />
               </div>
@@ -339,8 +391,9 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                   id="endVerse"
                   type="number"
                   min={startVerse}
+                  max={WARSH_SURAH_VERSES[surah]}
                   value={endVerse}
-                  onChange={(e) => setEndVerse(parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('endVerse', e.target.value)}
                   disabled={isReview}
                 />
               </div>
