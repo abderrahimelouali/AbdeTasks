@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { format, addWeeks, subWeeks, startOfWeek } from "date-fns";
+import { format, addWeeks, subWeeks, startOfWeek, isValid } from "date-fns";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,21 @@ const WeeklyPage = () => {
     }
   };
   
+  // Safely format a date with error handling
+  const safeFormat = (date: Date | null | undefined, formatString: string): string => {
+    if (!date || !isValid(date)) return "Invalid date";
+    try {
+      return format(date, formatString);
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "Format error";
+    }
+  };
+  
+  // Make sure we have valid week dates before rendering
+  const validWeekStart = weekDates.length > 0 && isValid(weekDates[0]) ? weekDates[0] : new Date();
+  const validWeekEnd = weekDates.length > 6 && isValid(weekDates[6]) ? weekDates[6] : new Date();
+  
   return (
     <Layout>
       <div className="space-y-6">
@@ -107,7 +122,7 @@ const WeeklyPage = () => {
         
         <div className="flex justify-center">
           <div className="font-medium">
-            {format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMMM d")} - {format(weekDates[6], "MMMM d, yyyy")}
+            {safeFormat(startOfWeek(validWeekStart, { weekStartsOn: 1 }), "MMMM d")} - {safeFormat(validWeekEnd, "MMMM d, yyyy")}
           </div>
         </div>
         
@@ -122,21 +137,26 @@ const WeeklyPage = () => {
             </div>
             
             <div className="grid grid-cols-7 gap-1 mb-6">
-              {weekDates.map(date => {
+              {weekDates.map((date, index) => {
+                if (!isValid(date)) {
+                  return (
+                    <div key={`invalid-date-${index}`} className="text-center p-2 rounded-md">
+                      <div className="text-sm text-muted-foreground">Invalid</div>
+                    </div>
+                  );
+                }
+                
                 const dateStr = formatDate(date);
                 const hasTask = !!weekTasks[dateStr];
+                const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
                 
                 return (
                   <div 
                     key={dateStr} 
-                    className={`text-center p-2 rounded-md ${
-                      format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
-                        ? 'border-2 border-primary'
-                        : ''
-                    }`}
+                    className={`text-center p-2 rounded-md ${isToday ? 'border-2 border-primary' : ''}`}
                   >
                     <div className={`text-sm ${hasTask ? 'font-bold' : 'text-muted-foreground'}`}>
-                      {format(date, 'd')}
+                      {safeFormat(date, 'd')}
                     </div>
                   </div>
                 );
@@ -152,7 +172,15 @@ const WeeklyPage = () => {
                   <div key={category} className="flex flex-col">
                     <div className="capitalize font-medium mb-1">{category}</div>
                     <div className="grid grid-cols-7 gap-1">
-                      {weekDates.map(date => {
+                      {weekDates.map((date, index) => {
+                        if (!isValid(date)) {
+                          return (
+                            <div key={`${category}-invalid-${index}`}>
+                              <div className="h-4 rounded-sm bg-gray-200 dark:bg-gray-700" title="Invalid date"></div>
+                            </div>
+                          );
+                        }
+                        
                         const dateStr = formatDate(date);
                         return (
                           <div key={`${category}-${dateStr}`}>
@@ -174,13 +202,30 @@ const WeeklyPage = () => {
               <h3 className="font-semibold">Prayer Status</h3>
               
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-                {weekDates.map(date => {
+                {weekDates.map((date, index) => {
+                  if (!isValid(date)) {
+                    return (
+                      <div key={`prayer-invalid-${index}`} className="space-y-2">
+                        <div className="text-sm font-medium">Invalid date</div>
+                        <div className="grid grid-cols-5 gap-1">
+                          {['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].map((name) => (
+                            <div 
+                              key={name} 
+                              className="w-full h-4 rounded-sm bg-gray-200 dark:bg-gray-700"
+                              title={`${name}: invalid date`}
+                            ></div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  
                   const dateStr = formatDate(date);
                   const task = weekTasks[dateStr];
                   
                   return (
                     <div key={`prayer-${dateStr}`} className="space-y-2">
-                      <div className="text-sm font-medium">{format(date, 'EEE, MMM d')}</div>
+                      <div className="text-sm font-medium">{safeFormat(date, 'EEE, MMM d')}</div>
                       
                       {task ? (
                         <div className="grid grid-cols-5 gap-1">
