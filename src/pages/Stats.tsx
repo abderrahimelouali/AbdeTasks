@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
          PieChart, Pie, Cell } from "recharts";
 import { storage } from "@/lib/storage";
-import { DailyTask, CategoryType, EnglishSkill } from "@/types";
+import { DailyTask, CategoryType, EnglishSkill, StudySession } from "@/types";
 import { calculateStrengthLevel, getCategoryColor } from "@/lib/utils";
 
 const StatsPage = () => {
@@ -31,8 +30,9 @@ const StatsPage = () => {
     // Calculate English skills data
     calculateEnglishSkillsData(loadedTasks);
     
-    // Calculate study hours data
-    calculateStudyHoursData(loadedTasks);
+    // Get all study sessions from storage instead of just from daily tasks
+    const studySessions = storage.getStudySessions();
+    calculateStudyHoursData(studySessions);
     
     // Calculate Quran verses data
     calculateQuranVersesData(loadedTasks);
@@ -169,17 +169,15 @@ const StatsPage = () => {
     setEnglishSkillsData(skillsData);
   };
   
-  const calculateStudyHoursData = (tasks: DailyTask[]) => {
+  const calculateStudyHoursData = (studySessions: StudySession[]) => {
     const topicHours: Record<string, number> = {};
     
-    tasks.forEach(task => {
-      if (task.study) {
-        const topic = task.study.topic;
-        if (!topicHours[topic]) {
-          topicHours[topic] = 0;
-        }
-        topicHours[topic] += task.study.duration;
+    studySessions.forEach(session => {
+      const topic = session.topic;
+      if (!topicHours[topic]) {
+        topicHours[topic] = 0;
       }
+      topicHours[topic] += session.duration;
     });
     
     const studyHours = Object.entries(topicHours)
