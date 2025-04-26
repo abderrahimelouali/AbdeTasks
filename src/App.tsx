@@ -1,8 +1,10 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import Index from "./pages/Index";
 import Tasks from "./pages/Tasks";
 import Stats from "./pages/Stats";
@@ -23,24 +25,29 @@ const arabicFontStyle = `
   }
 `;
 
+// Create QueryClient instance with updated configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
-        });
+      onSettled: (data, error) => {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "An error occurred",
+          });
+        }
       }
     },
     queries: {
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
-        });
+      onSettled: (data, error) => {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "An error occurred",
+          });
+        }
       }
     }
   }

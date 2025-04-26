@@ -4,21 +4,29 @@ type Theme = "dark" | "light";
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check if theme exists in localStorage
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    
-    // If theme exists in localStorage, use it
-    if (savedTheme) {
-      return savedTheme;
+    // Check if we're in a browser environment
+    if (typeof window !== "undefined") {
+      // Check if theme exists in localStorage
+      const savedTheme = localStorage.getItem("theme") as Theme | null;
+      
+      // If theme exists in localStorage, use it
+      if (savedTheme) {
+        return savedTheme;
+      }
+      
+      // Otherwise, check user's system preference
+      return window.matchMedia("(prefers-color-scheme: dark)").matches 
+        ? "dark" 
+        : "light";
     }
     
-    // Otherwise, check user's system preference
-    return window.matchMedia("(prefers-color-scheme: dark)").matches 
-      ? "dark" 
-      : "light";
+    // Default to 'light' if not in browser
+    return "light";
   });
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     const root = window.document.documentElement;
     
     if (theme === "dark") {
