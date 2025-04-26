@@ -60,6 +60,13 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
     
     onSessionSave(session);
   };
+
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+      setDuration(value);
+    }
+  };
   
   return (
     <Card className={studySession ? "" : "border-study/50"}>
@@ -107,7 +114,7 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
               min={0.5}
               step={0.5}
               value={duration}
-              onChange={(e) => setDuration(parseFloat(e.target.value))}
+              onChange={handleDurationChange}
               required
             />
           </div>
