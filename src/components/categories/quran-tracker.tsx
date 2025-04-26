@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { QuranProgress } from "@/types";
 import { toast } from "@/hooks/use-toast";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Edit, Pencil } from "lucide-react";
 
 interface QuranTrackerProps {
   quranProgress: QuranProgress | null;
@@ -133,8 +133,32 @@ const WARSH_SURAH_VERSES: Record<string, number> = {
   "An-Nas": 6,
 };
 
-// Sort surah names alphabetically for dropdown
-const SORTED_SURAHS = Object.keys(WARSH_SURAH_VERSES).sort();
+// Preserve Quranic order of surahs
+const ORDERED_SURAHS = [
+  "Al-Fatihah", "Al-Baqarah", "Al-Imran", "An-Nisa", "Al-Maidah", 
+  "Al-Anam", "Al-Araf", "Al-Anfal", "At-Tawbah", "Yunus", 
+  "Hud", "Yusuf", "Ar-Rad", "Ibrahim", "Al-Hijr", 
+  "An-Nahl", "Al-Isra", "Al-Kahf", "Maryam", "Ta-Ha", 
+  "Al-Anbiya", "Al-Hajj", "Al-Muminun", "An-Nur", "Al-Furqan", 
+  "Ash-Shuara", "An-Naml", "Al-Qasas", "Al-Ankabut", "Ar-Rum", 
+  "Luqman", "As-Sajdah", "Al-Ahzab", "Saba", "Fatir", 
+  "Ya-Sin", "As-Saffat", "Sad", "Az-Zumar", "Ghafir", 
+  "Fussilat", "Ash-Shura", "Az-Zukhruf", "Ad-Dukhan", "Al-Jathiyah", 
+  "Al-Ahqaf", "Muhammad", "Al-Fath", "Al-Hujurat", "Qaf", 
+  "Adh-Dhariyat", "At-Tur", "An-Najm", "Al-Qamar", "Ar-Rahman", 
+  "Al-Waqiah", "Al-Hadid", "Al-Mujadila", "Al-Hashr", "Al-Mumtahanah", 
+  "As-Saf", "Al-Jumuah", "Al-Munafiqun", "At-Taghabun", "At-Talaq", 
+  "At-Tahrim", "Al-Mulk", "Al-Qalam", "Al-Haqqah", "Al-Maarij", 
+  "Nuh", "Al-Jinn", "Al-Muzzammil", "Al-Muddaththir", "Al-Qiyamah", 
+  "Al-Insan", "Al-Mursalat", "An-Naba", "An-Naziat", "Abasa", 
+  "At-Takwir", "Al-Infitar", "Al-Mutaffifin", "Al-Inshiqaq", "Al-Buruj", 
+  "At-Tariq", "Al-Ala", "Al-Ghashiyah", "Al-Fajr", "Al-Balad", 
+  "Ash-Shams", "Al-Lail", "Ad-Dhuha", "Ash-Sharh", "At-Tin", 
+  "Al-Alaq", "Al-Qadr", "Al-Bayyinah", "Az-Zalzalah", "Al-Adiyat", 
+  "Al-Qariah", "At-Takathur", "Al-Asr", "Al-Humazah", "Al-Fil", 
+  "Quraish", "Al-Maun", "Al-Kawthar", "Al-Kafirun", "An-Nasr", 
+  "Al-Masad", "Al-Ikhlas", "Al-Falaq", "An-Nas"
+];
 
 export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProps) {
   const [surah, setSurah] = useState<string>(quranProgress?.surah || "Al-Baqarah");
@@ -147,12 +171,17 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
   const [reviewSurah, setReviewSurah] = useState<string>(quranProgress?.surah || "Al-Baqarah");
   const [showSurahSelector, setShowSurahSelector] = useState(false);
   const [memorizedVersesBySurah, setMemorizedVersesBySurah] = useState<Record<string, number>>({});
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [quranProgressList, setQuranProgressList] = useState<QuranProgress[]>([]);
+  const [selectedProgressToEdit, setSelectedProgressToEdit] = useState<QuranProgress | null>(null);
   
   // Load memorized verses on component mount
   useEffect(() => {
-    const quranProgressList = localStorage.getItem('abdetask_quran_progress');
-    if (quranProgressList) {
-      const progressEntries: QuranProgress[] = JSON.parse(quranProgressList);
+    const progressList = localStorage.getItem('abdetask_quran_progress');
+    if (progressList) {
+      const progressEntries: QuranProgress[] = JSON.parse(progressList);
+      setQuranProgressList(progressEntries);
+      
       const memorizedCounts: Record<string, number> = {};
       
       // Calculate the maximum verse number memorized for each surah
@@ -277,6 +306,17 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
       [surah]: Math.max(prev[surah] || 0, endVerse)
     }));
     
+    // Update quran progress list
+    setQuranProgressList(prevList => {
+      const existingIndex = prevList.findIndex(p => p.date === progress.date && !p.isReview);
+      if (existingIndex >= 0) {
+        const updatedList = [...prevList];
+        updatedList[existingIndex] = progress;
+        return updatedList;
+      }
+      return [...prevList, progress];
+    });
+    
     // Check if we reached the end of the surah
     if (endVerse === maxVerses) {
       setShowNextSurahDialog(true);
@@ -285,9 +325,9 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
 
   const handleNextSurah = () => {
     // Find the current surah index and move to the next one
-    const currentIndex = SORTED_SURAHS.indexOf(surah);
-    if (currentIndex >= 0 && currentIndex < SORTED_SURAHS.length - 1) {
-      const nextSurah = SORTED_SURAHS[currentIndex + 1];
+    const currentIndex = ORDERED_SURAHS.indexOf(surah);
+    if (currentIndex >= 0 && currentIndex < ORDERED_SURAHS.length - 1) {
+      const nextSurah = ORDERED_SURAHS[currentIndex + 1];
       setSurah(nextSurah);
       setStartVerse(1);
       setEndVerse(1);
@@ -320,6 +360,48 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
     setShowReviewDialog(false);
   };
   
+  const showAllProgress = () => {
+    setShowEditDialog(true);
+  };
+  
+  const handleEditProgress = (progress: QuranProgress) => {
+    setSelectedProgressToEdit(progress);
+    
+    // Set form values to match the selected progress
+    setSurah(progress.surah);
+    setStartVerse(progress.startVerse);
+    setEndVerse(progress.endVerse);
+    setIsReview(progress.isReview || false);
+    
+    setShowEditDialog(false);
+  };
+  
+  const handleDeleteProgress = (dateToDelete: string, isReviewEntry: boolean = false) => {
+    setQuranProgressList(prevList => {
+      const updatedList = prevList.filter(p => !(p.date === dateToDelete && p.isReview === isReviewEntry));
+      localStorage.setItem(QURAN_PROGRESS_KEY, JSON.stringify(updatedList));
+      
+      // Recalculate memorized verses
+      const memorizedCounts: Record<string, number> = {};
+      updatedList.forEach(entry => {
+        if (!entry.isReview) {
+          const { surah, endVerse } = entry;
+          if (!memorizedCounts[surah] || endVerse > memorizedCounts[surah]) {
+            memorizedCounts[surah] = endVerse;
+          }
+        }
+      });
+      
+      setMemorizedVersesBySurah(memorizedCounts);
+      
+      return updatedList;
+    });
+    
+    toast({
+      description: "Entry deleted successfully",
+    });
+  };
+  
   return (
     <>
       <Card className="border-quran/50">
@@ -335,7 +417,14 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
           )}
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between mb-4">
+            <Button 
+              variant="outline" 
+              className="text-quran border-quran/50 hover:bg-quran/10"
+              onClick={showAllProgress}
+            >
+              <Pencil className="h-4 w-4 mr-2" /> Edit Progress
+            </Button>
             <Button 
               variant="outline" 
               className="text-quran border-quran/50 hover:bg-quran/10"
@@ -356,7 +445,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="max-h-80 overflow-y-auto">
-                    {SORTED_SURAHS.map((surahName) => (
+                    {ORDERED_SURAHS.map((surahName) => (
                       <DropdownMenuItem
                         key={surahName}
                         onClick={() => {
@@ -400,8 +489,24 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
             </div>
             
             <Button type="submit" className="w-full bg-quran hover:bg-quran/90 text-black">
-              {isReview ? "Save Review" : "Save Progress"}
+              {selectedProgressToEdit ? "Update Progress" : isReview ? "Save Review" : "Save Progress"}
             </Button>
+            
+            {selectedProgressToEdit && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full mt-2"
+                onClick={() => {
+                  setSelectedProgressToEdit(null);
+                  setSurah(quranProgress?.surah || "Al-Baqarah");
+                  setStartVerse(quranProgress?.startVerse || 1);
+                  setEndVerse(quranProgress?.endVerse || 1);
+                }}
+              >
+                Cancel Editing
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>
@@ -438,7 +543,10 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                 <DropdownMenuContent className="max-h-80 overflow-y-auto">
                   {Object.entries(memorizedVersesBySurah)
                     .filter(([_, verseCount]) => verseCount > 0)
-                    .sort(([a], [b]) => a.localeCompare(b))
+                    .sort(([a], [b]) => {
+                      // Sort by Quranic order
+                      return ORDERED_SURAHS.indexOf(a) - ORDERED_SURAHS.indexOf(b);
+                    })
                     .map(([surahName, verseCount]) => (
                       <DropdownMenuItem
                         key={surahName}
@@ -478,6 +586,63 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
             <Button onClick={startReview} className="bg-quran hover:bg-quran/90 text-black">
               Start Review
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit Progress History</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {quranProgressList.length > 0 ? (
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Date</th>
+                    <th className="text-left py-2">Surah</th>
+                    <th className="text-left py-2">Verses</th>
+                    <th className="text-left py-2">Type</th>
+                    <th className="text-left py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quranProgressList
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((progress, idx) => (
+                      <tr key={`${progress.date}-${idx}`} className="border-b hover:bg-muted/50">
+                        <td className="py-2">{progress.date}</td>
+                        <td className="py-2">{progress.surah}</td>
+                        <td className="py-2">{progress.startVerse}-{progress.endVerse}</td>
+                        <td className="py-2">{progress.isReview ? "Review" : "New"}</td>
+                        <td className="py-2 space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditProgress(progress)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleDeleteProgress(progress.date, progress.isReview)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">No progress entries found.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowEditDialog(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
