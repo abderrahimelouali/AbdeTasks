@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,21 +29,33 @@ const arabicFontStyle = `
 const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
-        });
+      mutationFn: async () => {
+        // Default empty function, will be overridden by actual mutation functions
+        return undefined;
+      },
+      onSettled: (_, error) => {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "An error occurred",
+          });
+        }
       }
     },
     queries: {
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
-        });
+      queryFn: async () => {
+        // Default empty function, will be overridden by actual query functions
+        return undefined;
+      },
+      onSettled: (_, error) => {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "An error occurred",
+          });
+        }
       }
     }
   }
