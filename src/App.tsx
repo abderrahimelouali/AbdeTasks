@@ -28,29 +28,34 @@ const arabicFontStyle = `
 const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
-      mutationFn: async () => {
+      retry: false,
+      onMutate: () => {
         // Default empty function, will be overridden by actual mutation functions
-        return undefined;
       },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
-        });
+      onSuccess: () => {
+        // Default empty function
+      },
+      meta: {
+        onError: (error: Error) => {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "An error occurred",
+          });
+        }
       }
     },
     queries: {
-      queryFn: async () => {
-        // Default empty function, will be overridden by actual query functions
-        return undefined;
-      },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
-        });
+      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      meta: {
+        onError: (error: Error) => {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error instanceof Error ? error.message : "An error occurred",
+          });
+        }
       }
     }
   }
