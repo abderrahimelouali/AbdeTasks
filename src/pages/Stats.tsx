@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -170,19 +171,31 @@ const StatsPage = () => {
   };
   
   const calculateStudyHoursData = (studySessions: StudySession[]) => {
+    // Fix: Properly aggregate hours by normalized topic name
     const topicHours: Record<string, number> = {};
+    const topicNameMap: Record<string, string> = {}; // To preserve original capitalization
     
     studySessions.forEach(session => {
-      const topic = session.topic;
-      if (!topicHours[topic]) {
-        topicHours[topic] = 0;
+      // Normalize the topic name for consistent grouping
+      const normalizedTopic = session.topic.trim().toLowerCase();
+      
+      // Store the original topic name (for display)
+      if (!topicNameMap[normalizedTopic]) {
+        topicNameMap[normalizedTopic] = session.topic;
       }
-      topicHours[topic] += session.duration;
+      
+      if (!topicHours[normalizedTopic]) {
+        topicHours[normalizedTopic] = 0;
+      }
+      
+      // Add hours to the topic total
+      topicHours[normalizedTopic] += session.duration;
     });
     
+    // Create data array using the original topic names
     const studyHours = Object.entries(topicHours)
-      .map(([topic, hours]) => ({
-        topic,
+      .map(([normalizedTopic, hours]) => ({
+        topic: topicNameMap[normalizedTopic] || normalizedTopic,
         hours
       }))
       .sort((a, b) => b.hours - a.hours)

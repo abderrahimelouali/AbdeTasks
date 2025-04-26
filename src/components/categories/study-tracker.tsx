@@ -39,10 +39,13 @@ export function StudyTracker({ studySession, onSessionSave }: StudyTrackerProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Trim the topic to ensure consistent handling
+    const trimmedTopic = topic.trim();
+    
     const session: StudySession = {
       id: studySession?.id || generateId(),
       date: studySession?.date || new Date().toISOString().split('T')[0],
-      topic,
+      topic: trimmedTopic,
       type: typeOfStudy,
       duration,
       notes

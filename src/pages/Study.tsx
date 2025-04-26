@@ -73,14 +73,19 @@ const StudyPage = () => {
   }, [studySessions, searchTerm, sortBy, sortDirection]);
   
   const generateTopicData = (sessions: StudySession[]) => {
+    // Fix: Properly aggregate hours by topic across all dates
     const topicHours: Record<string, number> = {};
     
     sessions.forEach(session => {
-      if (!topicHours[session.topic]) {
-        topicHours[session.topic] = 0;
+      // Normalize topic name by trimming and converting to lowercase
+      const normalizedTopic = session.topic.trim().toLowerCase();
+      
+      if (!topicHours[normalizedTopic]) {
+        topicHours[normalizedTopic] = 0;
       }
       
-      topicHours[session.topic] += session.duration;
+      // Add duration hours to the topic's total
+      topicHours[normalizedTopic] += session.duration;
     });
     
     const colors = [
@@ -88,9 +93,18 @@ const StudyPage = () => {
       "#15003F", "#000019", "#9B00FF", "#B700FF", "#D200FF"
     ];
     
+    // Create data array using the original topic name from the first occurrence
+    const topicNameMap: Record<string, string> = {};
+    sessions.forEach(session => {
+      const normalizedTopic = session.topic.trim().toLowerCase();
+      if (!topicNameMap[normalizedTopic]) {
+        topicNameMap[normalizedTopic] = session.topic;
+      }
+    });
+    
     const data = Object.entries(topicHours)
-      .map(([topic, hours], index) => ({
-        topic,
+      .map(([normalizedTopic, hours], index) => ({
+        topic: topicNameMap[normalizedTopic] || normalizedTopic,
         hours,
         color: colors[index % colors.length]
       }))
@@ -164,7 +178,7 @@ const StudyPage = () => {
   };
   
   const totalHours = studySessions.reduce((total, session) => total + session.duration, 0);
-  const uniqueTopics = new Set(studySessions.map(s => s.topic)).size;
+  const uniqueTopics = new Set(studySessions.map(s => s.topic.trim().toLowerCase())).size;
 
   return (
     <Layout>

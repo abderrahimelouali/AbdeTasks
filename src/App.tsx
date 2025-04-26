@@ -29,12 +29,6 @@ const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
       retry: false,
-      onMutate: () => {
-        // Default empty function, will be overridden by actual mutation functions
-      },
-      onSuccess: () => {
-        // Default empty function
-      },
       meta: {
         onError: (error: Error) => {
           toast({
