@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,14 +32,12 @@ const queryClient = new QueryClient({
         // Default empty function, will be overridden by actual mutation functions
         return undefined;
       },
-      onSettled: (_, error) => {
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error instanceof Error ? error.message : "An error occurred",
-          });
-        }
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "An error occurred",
+        });
       }
     },
     queries: {
@@ -48,14 +45,12 @@ const queryClient = new QueryClient({
         // Default empty function, will be overridden by actual query functions
         return undefined;
       },
-      onSettled: (_, error) => {
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error instanceof Error ? error.message : "An error occurred",
-          });
-        }
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "An error occurred",
+        });
       }
     }
   }
