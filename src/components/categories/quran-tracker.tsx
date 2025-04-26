@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -379,7 +378,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
   const handleDeleteProgress = (dateToDelete: string, isReviewEntry: boolean = false) => {
     setQuranProgressList(prevList => {
       const updatedList = prevList.filter(p => !(p.date === dateToDelete && p.isReview === isReviewEntry));
-      localStorage.setItem(QURAN_PROGRESS_KEY, JSON.stringify(updatedList));
+      localStorage.setItem('abdetask_quran_progress', JSON.stringify(updatedList));
       
       // Recalculate memorized verses
       const memorizedCounts: Record<string, number> = {};
