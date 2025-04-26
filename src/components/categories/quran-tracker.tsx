@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,122 +15,122 @@ interface QuranTrackerProps {
   onProgressSave: (progress: QuranProgress) => void;
 }
 
-// Complete list of surahs with verse counts in Warsh style
-const WARSH_SURAH_VERSES: Record<string, number> = {
-  "Al-Fatihah": 7,
-  "Al-Baqarah": 285, // Note: 285 verses in Warsh, not 286 as in Hafs
-  "Al-Imran": 200,
-  "An-Nisa": 176,
-  "Al-Maidah": 120,
-  "Al-Anam": 165,
-  "Al-Araf": 206,
-  "Al-Anfal": 75,
-  "At-Tawbah": 129,
-  "Yunus": 109,
-  "Hud": 123,
-  "Yusuf": 111,
-  "Ar-Rad": 43,
-  "Ibrahim": 52,
-  "Al-Hijr": 99,
-  "An-Nahl": 128,
-  "Al-Isra": 111,
-  "Al-Kahf": 110,
-  "Maryam": 98,
-  "Ta-Ha": 135,
-  "Al-Anbiya": 112,
-  "Al-Hajj": 78,
-  "Al-Muminun": 118,
-  "An-Nur": 64,
-  "Al-Furqan": 77,
-  "Ash-Shuara": 227,
-  "An-Naml": 93,
-  "Al-Qasas": 88,
-  "Al-Ankabut": 69,
-  "Ar-Rum": 60,
-  "Luqman": 34,
-  "As-Sajdah": 30,
-  "Al-Ahzab": 73,
-  "Saba": 54,
-  "Fatir": 45,
-  "Ya-Sin": 83,
-  "As-Saffat": 182,
-  "Sad": 88,
-  "Az-Zumar": 75,
-  "Ghafir": 85,
-  "Fussilat": 54,
-  "Ash-Shura": 53,
-  "Az-Zukhruf": 89,
-  "Ad-Dukhan": 59,
-  "Al-Jathiyah": 37,
-  "Al-Ahqaf": 35,
-  "Muhammad": 38,
-  "Al-Fath": 29,
-  "Al-Hujurat": 18,
-  "Qaf": 45,
-  "Adh-Dhariyat": 60,
-  "At-Tur": 49,
-  "An-Najm": 62,
-  "Al-Qamar": 55,
-  "Ar-Rahman": 78,
-  "Al-Waqiah": 96,
-  "Al-Hadid": 29,
-  "Al-Mujadila": 22,
-  "Al-Hashr": 24,
-  "Al-Mumtahanah": 13,
-  "As-Saf": 14,
-  "Al-Jumuah": 11,
-  "Al-Munafiqun": 11,
-  "At-Taghabun": 18,
-  "At-Talaq": 12,
-  "At-Tahrim": 12,
-  "Al-Mulk": 30,
-  "Al-Qalam": 52,
-  "Al-Haqqah": 52,
-  "Al-Maarij": 44,
-  "Nuh": 28,
-  "Al-Jinn": 28,
-  "Al-Muzzammil": 20,
-  "Al-Muddaththir": 56,
-  "Al-Qiyamah": 40,
-  "Al-Insan": 31,
-  "Al-Mursalat": 50,
-  "An-Naba": 40,
-  "An-Naziat": 46,
-  "Abasa": 42,
-  "At-Takwir": 29,
-  "Al-Infitar": 19,
-  "Al-Mutaffifin": 36,
-  "Al-Inshiqaq": 25,
-  "Al-Buruj": 22,
-  "At-Tariq": 17,
-  "Al-Ala": 19,
-  "Al-Ghashiyah": 26,
-  "Al-Fajr": 30,
-  "Al-Balad": 20,
-  "Ash-Shams": 15,
-  "Al-Lail": 21,
-  "Ad-Dhuha": 11,
-  "Ash-Sharh": 8,
-  "At-Tin": 8,
-  "Al-Alaq": 19,
-  "Al-Qadr": 5,
-  "Al-Bayyinah": 8,
-  "Az-Zalzalah": 8,
-  "Al-Adiyat": 11,
-  "Al-Qariah": 11,
-  "At-Takathur": 8,
-  "Al-Asr": 3,
-  "Al-Humazah": 9,
-  "Al-Fil": 5,
-  "Quraish": 4,
-  "Al-Maun": 7,
-  "Al-Kawthar": 3,
-  "Al-Kafirun": 6,
-  "An-Nasr": 3,
-  "Al-Masad": 5,
-  "Al-Ikhlas": 4,
-  "Al-Falaq": 5,
-  "An-Nas": 6,
+// Complete list of surahs with verse counts in Warsh style and Arabic names
+const WARSH_SURAH_VERSES: Record<string, { verses: number, arabic: string }> = {
+  "Al-Fatihah": { verses: 7, arabic: "الفاتحة" },
+  "Al-Baqarah": { verses: 285, arabic: "البقرة" }, // Note: 285 verses in Warsh, not 286 as in Hafs
+  "Al-Imran": { verses: 200, arabic: "آل عمران" },
+  "An-Nisa": { verses: 176, arabic: "النساء" },
+  "Al-Maidah": { verses: 120, arabic: "المائدة" },
+  "Al-Anam": { verses: 165, arabic: "الأنعام" },
+  "Al-Araf": { verses: 206, arabic: "الأعراف" },
+  "Al-Anfal": { verses: 75, arabic: "الأنفال" },
+  "At-Tawbah": { verses: 129, arabic: "التوبة" },
+  "Yunus": { verses: 109, arabic: "يونس" },
+  "Hud": { verses: 123, arabic: "هود" },
+  "Yusuf": { verses: 111, arabic: "يوسف" },
+  "Ar-Rad": { verses: 43, arabic: "الرعد" },
+  "Ibrahim": { verses: 52, arabic: "إبراهيم" },
+  "Al-Hijr": { verses: 99, arabic: "الحجر" },
+  "An-Nahl": { verses: 128, arabic: "النحل" },
+  "Al-Isra": { verses: 111, arabic: "الإسراء" },
+  "Al-Kahf": { verses: 110, arabic: "الكهف" },
+  "Maryam": { verses: 98, arabic: "مريم" },
+  "Ta-Ha": { verses: 135, arabic: "طه" },
+  "Al-Anbiya": { verses: 112, arabic: "الأنبياء" },
+  "Al-Hajj": { verses: 78, arabic: "الحج" },
+  "Al-Muminun": { verses: 118, arabic: "المؤمنون" },
+  "An-Nur": { verses: 64, arabic: "النور" },
+  "Al-Furqan": { verses: 77, arabic: "الفرقان" },
+  "Ash-Shuara": { verses: 227, arabic: "الشعراء" },
+  "An-Naml": { verses: 93, arabic: "النمل" },
+  "Al-Qasas": { verses: 88, arabic: "القصص" },
+  "Al-Ankabut": { verses: 69, arabic: "العنكبوت" },
+  "Ar-Rum": { verses: 60, arabic: "الروم" },
+  "Luqman": { verses: 34, arabic: "لقمان" },
+  "As-Sajdah": { verses: 30, arabic: "السجدة" },
+  "Al-Ahzab": { verses: 73, arabic: "الأحزاب" },
+  "Saba": { verses: 54, arabic: "سبأ" },
+  "Fatir": { verses: 45, arabic: "فاطر" },
+  "Ya-Sin": { verses: 83, arabic: "يس" },
+  "As-Saffat": { verses: 182, arabic: "الصافات" },
+  "Sad": { verses: 88, arabic: "ص" },
+  "Az-Zumar": { verses: 75, arabic: "الزمر" },
+  "Ghafir": { verses: 85, arabic: "غافر" },
+  "Fussilat": { verses: 54, arabic: "فصلت" },
+  "Ash-Shura": { verses: 53, arabic: "الشورى" },
+  "Az-Zukhruf": { verses: 89, arabic: "الزخرف" },
+  "Ad-Dukhan": { verses: 59, arabic: "الدخان" },
+  "Al-Jathiyah": { verses: 37, arabic: "الجاثية" },
+  "Al-Ahqaf": { verses: 35, arabic: "الأحقاف" },
+  "Muhammad": { verses: 38, arabic: "محمد" },
+  "Al-Fath": { verses: 29, arabic: "الفتح" },
+  "Al-Hujurat": { verses: 18, arabic: "الحجرات" },
+  "Qaf": { verses: 45, arabic: "ق" },
+  "Adh-Dhariyat": { verses: 60, arabic: "الذاريات" },
+  "At-Tur": { verses: 49, arabic: "الطور" },
+  "An-Najm": { verses: 62, arabic: "النجم" },
+  "Al-Qamar": { verses: 55, arabic: "القمر" },
+  "Ar-Rahman": { verses: 78, arabic: "الرحمن" },
+  "Al-Waqiah": { verses: 96, arabic: "الواقعة" },
+  "Al-Hadid": { verses: 29, arabic: "الحديد" },
+  "Al-Mujadila": { verses: 22, arabic: "المجادلة" },
+  "Al-Hashr": { verses: 24, arabic: "الحشر" },
+  "Al-Mumtahanah": { verses: 13, arabic: "الممتحنة" },
+  "As-Saf": { verses: 14, arabic: "الصف" },
+  "Al-Jumuah": { verses: 11, arabic: "الجمعة" },
+  "Al-Munafiqun": { verses: 11, arabic: "المنافقون" },
+  "At-Taghabun": { verses: 18, arabic: "التغابن" },
+  "At-Talaq": { verses: 12, arabic: "الطلاق" },
+  "At-Tahrim": { verses: 12, arabic: "التحريم" },
+  "Al-Mulk": { verses: 30, arabic: "الملك" },
+  "Al-Qalam": { verses: 52, arabic: "القلم" },
+  "Al-Haqqah": { verses: 52, arabic: "الحاقة" },
+  "Al-Maarij": { verses: 44, arabic: "المعارج" },
+  "Nuh": { verses: 28, arabic: "نوح" },
+  "Al-Jinn": { verses: 28, arabic: "الجن" },
+  "Al-Muzzammil": { verses: 20, arabic: "المزمل" },
+  "Al-Muddaththir": { verses: 56, arabic: "المدثر" },
+  "Al-Qiyamah": { verses: 40, arabic: "القيامة" },
+  "Al-Insan": { verses: 31, arabic: "الإنسان" },
+  "Al-Mursalat": { verses: 50, arabic: "المرسلات" },
+  "An-Naba": { verses: 40, arabic: "النبأ" },
+  "An-Naziat": { verses: 46, arabic: "النازعات" },
+  "Abasa": { verses: 42, arabic: "عبس" },
+  "At-Takwir": { verses: 29, arabic: "التكوير" },
+  "Al-Infitar": { verses: 19, arabic: "الإنفطار" },
+  "Al-Mutaffifin": { verses: 36, arabic: "المطففين" },
+  "Al-Inshiqaq": { verses: 25, arabic: "الإنشقاق" },
+  "Al-Buruj": { verses: 22, arabic: "البروج" },
+  "At-Tariq": { verses: 17, arabic: "الطارق" },
+  "Al-Ala": { verses: 19, arabic: "الأعلى" },
+  "Al-Ghashiyah": { verses: 26, arabic: "الغاشية" },
+  "Al-Fajr": { verses: 30, arabic: "الفجر" },
+  "Al-Balad": { verses: 20, arabic: "البلد" },
+  "Ash-Shams": { verses: 15, arabic: "الشمس" },
+  "Al-Lail": { verses: 21, arabic: "الليل" },
+  "Ad-Dhuha": { verses: 11, arabic: "الضحى" },
+  "Ash-Sharh": { verses: 8, arabic: "الشرح" },
+  "At-Tin": { verses: 8, arabic: "التين" },
+  "Al-Alaq": { verses: 19, arabic: "العلق" },
+  "Al-Qadr": { verses: 5, arabic: "القدر" },
+  "Al-Bayyinah": { verses: 8, arabic: "البينة" },
+  "Az-Zalzalah": { verses: 8, arabic: "الزلزلة" },
+  "Al-Adiyat": { verses: 11, arabic: "العاديات" },
+  "Al-Qariah": { verses: 11, arabic: "القارعة" },
+  "At-Takathur": { verses: 8, arabic: "التكاثر" },
+  "Al-Asr": { verses: 3, arabic: "العصر" },
+  "Al-Humazah": { verses: 9, arabic: "الهمزة" },
+  "Al-Fil": { verses: 5, arabic: "الفيل" },
+  "Quraish": { verses: 4, arabic: "قريش" },
+  "Al-Maun": { verses: 7, arabic: "الماعون" },
+  "Al-Kawthar": { verses: 3, arabic: "الكوثر" },
+  "Al-Kafirun": { verses: 6, arabic: "الكافرون" },
+  "An-Nasr": { verses: 3, arabic: "النصر" },
+  "Al-Masad": { verses: 5, arabic: "المسد" },
+  "Al-Ikhlas": { verses: 4, arabic: "الإخلاص" },
+  "Al-Falaq": { verses: 5, arabic: "الفلق" },
+  "An-Nas": { verses: 6, arabic: "الناس" },
 };
 
 // Preserve Quranic order of surahs
@@ -197,7 +198,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
 
   // Update endVerse when surah changes to prevent exceeding max verses
   useEffect(() => {
-    const maxVerses = WARSH_SURAH_VERSES[surah] || 0;
+    const maxVerses = WARSH_SURAH_VERSES[surah]?.verses || 0;
     if (endVerse > maxVerses) {
       setEndVerse(maxVerses);
     }
@@ -208,7 +209,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
 
   const handleInputChange = (field: 'startVerse' | 'endVerse', value: string) => {
     const numValue = parseInt(value) || 1;
-    const maxVerses = WARSH_SURAH_VERSES[surah] || 0;
+    const maxVerses = WARSH_SURAH_VERSES[surah]?.verses || 0;
 
     if (field === 'startVerse') {
       if (numValue < 1) {
@@ -278,7 +279,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
     }
 
     // Validate verse numbers
-    const maxVerses = WARSH_SURAH_VERSES[surah] || 0;
+    const maxVerses = WARSH_SURAH_VERSES[surah]?.verses || 0;
     
     if (endVerse > maxVerses) {
       setEndVerse(maxVerses);
@@ -401,6 +402,11 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
     });
   };
   
+  // Get Arabic name for a surah
+  const getArabicName = (englishName: string) => {
+    return WARSH_SURAH_VERSES[englishName]?.arabic || englishName;
+  };
+  
   return (
     <>
       <Card className="border-quran/50">
@@ -410,7 +416,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
           </CardTitle>
           {quranProgress && (
             <CardDescription>
-              Last: {quranProgress.surah} ({quranProgress.startVerse}-{quranProgress.endVerse})
+              Last: {quranProgress.surah} ({getArabicName(quranProgress.surah)}) ({quranProgress.startVerse}-{quranProgress.endVerse})
               {quranProgress.isReview && " (Review)"}
             </CardDescription>
           )}
@@ -440,7 +446,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-full flex justify-between" disabled={isReview}>
-                      {surah} <ChevronDown className="ml-1 h-4 w-4" />
+                      {getArabicName(surah)} <ChevronDown className="ml-1 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="max-h-80 overflow-y-auto">
@@ -453,7 +459,14 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                           setEndVerse(1);
                         }}
                       >
-                        {surahName} ({WARSH_SURAH_VERSES[surahName]} verses)
+                        <span className="inline-flex items-center">
+                          <span className="text-base font-arabic ml-1">{WARSH_SURAH_VERSES[surahName].arabic}</span>
+                          <span className="ml-2">-</span>
+                          <span className="ml-2">{surahName}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            ({WARSH_SURAH_VERSES[surahName].verses} verses)
+                          </span>
+                        </span>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
@@ -466,7 +479,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                   id="startVerse"
                   type="number"
                   min={1}
-                  max={WARSH_SURAH_VERSES[surah]}
+                  max={WARSH_SURAH_VERSES[surah]?.verses}
                   value={startVerse}
                   onChange={(e) => handleInputChange('startVerse', e.target.value)}
                   disabled={isReview}
@@ -479,7 +492,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                   id="endVerse"
                   type="number"
                   min={startVerse}
-                  max={WARSH_SURAH_VERSES[surah]}
+                  max={WARSH_SURAH_VERSES[surah]?.verses}
                   value={endVerse}
                   onChange={(e) => handleInputChange('endVerse', e.target.value)}
                   disabled={isReview}
@@ -513,9 +526,9 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
       <Dialog open={showNextSurahDialog} onOpenChange={setShowNextSurahDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Completed {surah}</DialogTitle>
+            <DialogTitle>Completed {surah} ({getArabicName(surah)})</DialogTitle>
           </DialogHeader>
-          <p>You have completed all {WARSH_SURAH_VERSES[surah]} verses of {surah}. Would you like to move to the next surah?</p>
+          <p>You have completed all {WARSH_SURAH_VERSES[surah]?.verses} verses of {surah} ({getArabicName(surah)}). Would you like to move to the next surah?</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNextSurahDialog(false)}>Cancel</Button>
             <Button onClick={handleNextSurah} className="bg-quran hover:bg-quran/90 text-black">
@@ -536,7 +549,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full flex justify-between">
-                    {reviewSurah} <ChevronDown className="ml-1 h-4 w-4" />
+                    {getArabicName(reviewSurah)} <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="max-h-80 overflow-y-auto">
@@ -554,7 +567,14 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                           setReviewVerses(Math.min(10, verseCount));
                         }}
                       >
-                        {surahName} (memorized: {verseCount} verses)
+                        <span className="inline-flex items-center">
+                          <span className="text-base font-arabic ml-1">{WARSH_SURAH_VERSES[surahName]?.arabic}</span>
+                          <span className="ml-2">-</span>
+                          <span className="ml-2">{surahName}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            (memorized: {verseCount} verses)
+                          </span>
+                        </span>
                       </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
@@ -612,7 +632,10 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                     .map((progress, idx) => (
                       <tr key={`${progress.date}-${idx}`} className="border-b hover:bg-muted/50">
                         <td className="py-2">{progress.date}</td>
-                        <td className="py-2">{progress.surah}</td>
+                        <td className="py-2">
+                          <span className="font-arabic ml-1">{getArabicName(progress.surah)}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">({progress.surah})</span>
+                        </td>
                         <td className="py-2">{progress.startVerse}-{progress.endVerse}</td>
                         <td className="py-2">{progress.isReview ? "Review" : "New"}</td>
                         <td className="py-2 space-x-2">

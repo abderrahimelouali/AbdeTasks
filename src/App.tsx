@@ -13,6 +13,17 @@ import NotFound from "./pages/NotFound";
 import { useTheme } from "./hooks/use-theme";
 import { useEffect } from "react";
 
+// Add Google Fonts for Arabic text directly in the App component
+const arabicFontStyle = `
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap');
+  
+  .font-arabic {
+    font-family: 'Noto Sans Arabic', sans-serif;
+    direction: rtl;
+    display: inline-block;
+  }
+`;
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -37,6 +48,25 @@ const App = () => {
     };
     
     setupInitialData();
+
+    // Add Arabic font style to the document
+    const styleElement = document.createElement('style');
+    styleElement.textContent = arabicFontStyle;
+    document.head.appendChild(styleElement);
+
+    // Add Google Fonts link to the document head
+    const linkElement = document.createElement('link');
+    linkElement.rel = 'stylesheet';
+    linkElement.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap';
+    document.head.appendChild(linkElement);
+
+    // Cleanup on component unmount
+    return () => {
+      document.head.removeChild(styleElement);
+      if (document.head.contains(linkElement)) {
+        document.head.removeChild(linkElement);
+      }
+    };
   }, []);
   
   return (
