@@ -309,8 +309,9 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                         Verses {range.start}-{range.end} ({range.end - range.start + 1} verses)
                       </SelectItem>
                     ))}
-                  </Select>
-                </div>
+                  </SelectContent>
+                </Select>
+              </div>
             )}
             
             <div className="grid grid-cols-2 gap-4">
