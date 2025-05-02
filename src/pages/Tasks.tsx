@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Layout } from "@/components/layout/layout";
@@ -6,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { storage } from "@/lib/storage";
-import { DailyTask, CategoryType, StudySession } from "@/types";
+import { DailyTask, CategoryType, StudySession, MoodType } from "@/types";
 import { getMoodEmoji, getCategoryBgClass } from "@/lib/utils";
 import { StudyTracker } from "@/components/categories/study-tracker";
 import { Edit } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
@@ -19,6 +20,7 @@ const TasksPage = () => {
   const [categoryFilter, setCategoryFilter] = useState<CategoryType | "all">("all");
   const [editingStudySession, setEditingStudySession] = useState<StudySession | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<DailyTask | null>(null);
   
   useEffect(() => {
     const loadedTasks = storage.getDailyTasks();
@@ -80,13 +82,28 @@ const TasksPage = () => {
     });
   };
   
+  const getMoodEmojiIcon = (mood: MoodType | null): string => {
+    if (!mood) return '';
+    
+    switch (mood) {
+      case 'great': return '😄';
+      case 'good': return '🙂';
+      case 'neutral': return '😐';
+      case 'bad': return '😔';
+      case 'terrible': return '😢';
+      default: return '';
+    }
+  };
+  
   const renderTaskCard = (task: DailyTask) => {
     return (
       <Card key={task.date} className="mb-4">
         <CardHeader className="pb-2">
           <CardTitle className="flex justify-between">
             <span>{format(new Date(task.date), "EEEE, MMMM d, yyyy")}</span>
-            {task.mood && <span>{getMoodEmoji(task.mood)}</span>}
+            {task.mood && (
+              <span title={`Mood: ${task.mood}`}>{getMoodEmojiIcon(task.mood)}</span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
@@ -119,6 +136,7 @@ const TasksPage = () => {
               {task.quran && (
                 <div className="mb-2">
                   <span className="font-medium">Qur'an:</span> {task.quran.surah} ({task.quran.startVerse}-{task.quran.endVerse})
+                  {task.quran.isReview && " (Review)"}
                 </div>
               )}
               
@@ -144,6 +162,19 @@ const TasksPage = () => {
                   {task.english.notes && <p className="text-sm text-muted-foreground">{task.english.notes}</p>}
                 </div>
               )}
+            </div>
+            
+            <div className="col-span-1 md:col-span-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  window.location.href = `/?date=${task.date}`;
+                }}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit All Entries
+              </Button>
             </div>
           </div>
         </CardContent>

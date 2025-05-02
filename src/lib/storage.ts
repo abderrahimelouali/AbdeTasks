@@ -1,3 +1,4 @@
+
 import { DailyTask, StudySession, EnglishSession, QuranProgress } from "@/types";
 
 const TASKS_KEY = 'abdetask_dailytasks';
@@ -76,7 +77,11 @@ export const storage = {
   
   saveQuranProgress: (progress: QuranProgress): void => {
     const allProgress = storage.getQuranProgress();
-    const existingIndex = allProgress.findIndex(p => p.date === progress.date);
+    const existingIndex = allProgress.findIndex(p => 
+      p.date === progress.date && 
+      p.isReview === progress.isReview &&
+      p.surah === progress.surah
+    );
     
     if (existingIndex >= 0) {
       allProgress[existingIndex] = progress;
@@ -85,6 +90,12 @@ export const storage = {
     }
     
     localStorage.setItem(QURAN_PROGRESS_KEY, JSON.stringify(allProgress));
+  },
+  
+  deleteQuranProgress: (date: string, isReview: boolean = false): void => {
+    const allProgress = storage.getQuranProgress();
+    const filteredProgress = allProgress.filter(p => !(p.date === date && p.isReview === isReview));
+    localStorage.setItem(QURAN_PROGRESS_KEY, JSON.stringify(filteredProgress));
   },
 
   getNofapStreak: (): number => {

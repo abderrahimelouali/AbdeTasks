@@ -1,147 +1,61 @@
 
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format } from "date-fns";
-import { CategoryType, MoodType, EnglishSkill } from "@/types";
-
+import { CategoryType, MoodType } from "@/types";
+ 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function formatDate(date: Date): string {
-  return format(date, 'yyyy-MM-dd');
-}
-
-export function formatReadableDate(date: Date): string {
-  return format(date, 'MMM dd, yyyy (EEE)');
+  return date.toISOString().split('T')[0];
 }
 
 export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-export function getCategoryColor(category: CategoryType): string {
-  switch (category) {
-    case 'nofap':
-      return '#FF007F';
-    case 'prayer':
-      return '#00CFFF';
-    case 'quran':
-      return '#00FF85';
-    case 'english':
-      return '#FFE600';
-    case 'study':
-      return '#7F00FF';
-    default:
-      return '#7F00FF';
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) {
+    return `${minutes}m`;
   }
+  
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  if (remainingMinutes === 0) {
+    return `${hours}h`;
+  }
+  
+  return `${hours}h ${remainingMinutes}m`;
 }
 
 export function getCategoryBgClass(category: CategoryType): string {
-  switch (category) {
-    case 'nofap':
-      return 'bg-nofap';
-    case 'prayer':
-      return 'bg-prayer';
-    case 'quran':
-      return 'bg-quran';
-    case 'english':
-      return 'bg-english';
-    case 'study':
-      return 'bg-study';
+  switch(category) {
+    case "nofap":
+      return "bg-nofap hover:bg-nofap/90 text-black";
+    case "prayer":
+      return "bg-prayer hover:bg-prayer/90 text-white";
+    case "quran":
+      return "bg-quran hover:bg-quran/90 text-black";
+    case "study":
+      return "bg-study hover:bg-study/90";
+    case "english":
+      return "bg-english hover:bg-english/90";
     default:
-      return 'bg-primary';
+      return "bg-primary hover:bg-primary/90";
   }
 }
 
-export function getCategoryTextClass(category: CategoryType): string {
-  switch (category) {
-    case 'nofap':
-      return 'text-nofap';
-    case 'prayer':
-      return 'text-prayer';
-    case 'quran':
-      return 'text-quran';
-    case 'english':
-      return 'text-english';
-    case 'study':
-      return 'text-study';
-    default:
-      return 'text-primary';
-  }
-}
-
-export function getMoodEmoji(mood: MoodType): string {
+export function getMoodEmoji(mood: MoodType | null): string {
+  if (!mood) return '';
+  
   switch (mood) {
-    case 'great':
-      return '😁';
-    case 'good':
-      return '🙂';
-    case 'neutral':
-      return '😐';
-    case 'bad':
-      return '😔';
-    case 'terrible':
-      return '😢';
-    default:
-      return '😐';
+    case 'great': return '😄';
+    case 'good': return '🙂';
+    case 'neutral': return '😐';
+    case 'bad': return '😔';
+    case 'terrible': return '😢';
+    default: return '';
   }
-}
-
-export function getEnglishSkillIcon(skill: EnglishSkill): string {
-  switch (skill) {
-    case 'listening':
-      return '👂';
-    case 'speaking':
-      return '🗣️';
-    case 'reading':
-      return '📖';
-    case 'writing':
-      return '✍️';
-    case 'grammar':
-      return '📝';
-    case 'mixed':
-      return '🔄';
-    case 'rest':
-      return '🛌';
-    default:
-      return '📚';
-  }
-}
-
-export function calculateStrengthLevel(completedTasks: number, totalTasks: number): number {
-  if (totalTasks === 0) return 0;
-  const percentage = (completedTasks / totalTasks) * 100;
-  
-  if (percentage >= 95) return 7;
-  if (percentage >= 85) return 6;
-  if (percentage >= 75) return 5;
-  if (percentage >= 65) return 4;
-  if (percentage >= 55) return 3;
-  if (percentage >= 45) return 2;
-  if (percentage >= 30) return 1;
-  return 0;
-}
-
-export function getWeekDates(date: Date): Date[] {
-  const day = date.getDay(); // 0 = Sunday, 6 = Saturday
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to get Monday
-  
-  const monday = new Date(date.setDate(diff));
-  
-  const weekDates: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    const nextDate = new Date(monday);
-    nextDate.setDate(monday.getDate() + i);
-    weekDates.push(nextDate);
-  }
-  
-  return weekDates;
-}
-
-export function isToday(date: Date): boolean {
-  const today = new Date();
-  return date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear();
 }

@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { QuranProgress } from "@/types";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { ChevronDown, Edit, Pencil } from "lucide-react";
+import { storage } from "@/lib/storage";
 
 interface QuranTrackerProps {
   quranProgress: QuranProgress | null;
@@ -177,23 +178,22 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
   
   // Load memorized verses on component mount
   useEffect(() => {
-    const progressList = localStorage.getItem('abdetask_quran_progress');
-    if (progressList) {
-      const progressEntries: QuranProgress[] = JSON.parse(progressList);
-      setQuranProgressList(progressEntries);
-      
-      const memorizedCounts: Record<string, number> = {};
-      
-      // Calculate the maximum verse number memorized for each surah
-      progressEntries.forEach(entry => {
+    const progressList = storage.getQuranProgress();
+    setQuranProgressList(progressList);
+    
+    const memorizedCounts: Record<string, number> = {};
+    
+    // Calculate the maximum verse number memorized for each surah
+    progressList.forEach(entry => {
+      if (!entry.isReview) { // Only count non-review entries for memorization tracking
         const { surah, endVerse } = entry;
         if (!memorizedCounts[surah] || endVerse > memorizedCounts[surah]) {
           memorizedCounts[surah] = endVerse;
         }
-      });
-      
-      setMemorizedVersesBySurah(memorizedCounts);
-    }
+      }
+    });
+    
+    setMemorizedVersesBySurah(memorizedCounts);
   }, []);
 
   // Update endVerse when surah changes to prevent exceeding max verses
@@ -253,6 +253,14 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
       // Validate review verses count against memorized verses
       const maxMemorizedVerses = memorizedVersesBySurah[reviewSurah] || 0;
       
+      if (maxMemorizedVerses === 0) {
+        toast({
+          description: `You haven't memorized any verses from ${reviewSurah} yet.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
       if (reviewVerses > maxMemorizedVerses) {
         toast({
           description: `You can only review ${maxMemorizedVerses} verses from ${reviewSurah} as that's all you've memorized.`,
@@ -271,6 +279,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
       };
       
       onProgressSave(progress);
+      storage.saveQuranProgress(progress);
       setIsReview(false);
       toast({
         description: `Review session saved for ${reviewVerses} verses of ${reviewSurah}`,
@@ -300,6 +309,9 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
     
     onProgressSave(progress);
     
+    // Save to storage
+    storage.saveQuranProgress(progress);
+    
     // Update memorized verses count for this surah
     setMemorizedVersesBySurah(prev => ({
       ...prev,
@@ -321,6 +333,8 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
     if (endVerse === maxVerses) {
       setShowNextSurahDialog(true);
     }
+    
+    setSelectedProgressToEdit(null);
   };
 
   const handleNextSurah = () => {
@@ -596,7 +610,7 @@ export function QuranTracker({ quranProgress, onProgressSave }: QuranTrackerProp
                 min={1}
                 max={memorizedVersesBySurah[reviewSurah] || 100}
                 value={reviewVerses}
-                onChange={(e) => setReviewVerses(parseInt(e.target.value))}
+                onChange={(e) => setReviewVerses(parseInt(e.target.value) || 1)}
               />
             </div>
           </div>
