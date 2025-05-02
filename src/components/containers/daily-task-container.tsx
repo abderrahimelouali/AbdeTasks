@@ -1,14 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
 import { DailyTask, Prayer, PrayerName, MoodType } from "@/types";
 import { storage } from "@/lib/storage";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { DateSelector } from "@/components/date/date-selector";
-import { PastTasksDialog } from "@/components/dialogs/past-tasks-dialog";
 import { TrackerGrid } from "@/components/trackers/tracker-grid";
 
 export function DailyTaskContainer() {
@@ -31,17 +28,20 @@ export function DailyTaskContainer() {
     mood: null
   });
   
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showPastTasksDialog, setShowPastTasksDialog] = useState(false);
-  const [pastTasks, setPastTasks] = useState<DailyTask[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    // Check if there's a date parameter in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+    return dateParam ? new Date(dateParam) : new Date();
+  });
   
   useEffect(() => {
     // Load tasks when component mounts
-    loadTaskForDate(today);
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+    const dateToLoad = dateParam || today;
     
-    // Load past tasks for calendar view
-    const allTasks = storage.getDailyTasks();
-    setPastTasks(allTasks);
+    loadTaskForDate(dateToLoad);
   }, [today]);
   
   const loadTaskForDate = (date: string) => {
@@ -85,9 +85,6 @@ export function DailyTaskContainer() {
     toast({
       description: "Your progress has been saved.",
     });
-    
-    // Refresh past tasks list
-    setPastTasks(storage.getDailyTasks());
   };
 
   const handlePrayersUpdate = (prayers: Prayer[]) => {
@@ -128,12 +125,11 @@ export function DailyTaskContainer() {
     const formattedDate = formatDate(date);
     loadTaskForDate(formattedDate);
     setSelectedDate(date);
-  };
-  
-  const handleEditPastTask = (date: string) => {
-    loadTaskForDate(date);
-    setSelectedDate(new Date(date));
-    setShowPastTasksDialog(false);
+    
+    // Update URL without refreshing the page
+    const url = new URL(window.location.href);
+    url.searchParams.set('date', formattedDate);
+    window.history.pushState({}, '', url);
   };
 
   const isSelectedToday = formatDate(selectedDate) === today;
@@ -148,21 +144,11 @@ export function DailyTaskContainer() {
           </span>
         </h1>
         
-        <div className="flex gap-2 mt-2 sm:mt-0">
-          <DateSelector 
-            selectedDate={selectedDate}
-            onDateSelect={handleDateSelect}
-            today={today}
-          />
-          
-          <Button
-            variant="outline"
-            onClick={() => setShowPastTasksDialog(true)}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Past Tasks
-          </Button>
-        </div>
+        <DateSelector 
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
+          today={today}
+        />
       </div>
 
       <TrackerGrid 
@@ -173,13 +159,6 @@ export function DailyTaskContainer() {
         onStudySessionSave={handleStudySessionSave}
         onEnglishSessionSave={handleEnglishSessionSave}
         onMoodChange={handleMoodChange}
-      />
-      
-      <PastTasksDialog 
-        open={showPastTasksDialog}
-        onOpenChange={setShowPastTasksDialog}
-        pastTasks={pastTasks}
-        onEditTask={handleEditPastTask}
       />
     </div>
   );

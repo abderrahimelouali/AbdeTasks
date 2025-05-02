@@ -5,13 +5,14 @@ import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { storage } from "@/lib/storage";
-import { DailyTask, CategoryType, StudySession, MoodType } from "@/types";
+import { DailyTask, CategoryType, StudySession, MoodType, QuranProgress } from "@/types";
 import { getMoodEmoji, getCategoryBgClass } from "@/lib/utils";
 import { StudyTracker } from "@/components/categories/study-tracker";
-import { Edit } from "lucide-react";
+import { Edit, BookOpen } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
@@ -21,13 +22,58 @@ const TasksPage = () => {
   const [editingStudySession, setEditingStudySession] = useState<StudySession | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<DailyTask | null>(null);
+  const [quranSummary, setQuranSummary] = useState<{ surah: string, totalVerses: number } | null>(null);
+  const [isQuranSheetOpen, setIsQuranSheetOpen] = useState(false);
   
   useEffect(() => {
     const loadedTasks = storage.getDailyTasks();
     loadedTasks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setTasks(loadedTasks);
     setFilteredTasks(loadedTasks);
+    
+    // Calculate Quran progress
+    calculateQuranProgress(loadedTasks);
   }, []);
+  
+  const calculateQuranProgress = (tasks: DailyTask[]) => {
+    // Group by surah
+    const surahProgress: Record<string, number[]> = {};
+    
+    tasks.forEach(task => {
+      if (task.quran && !task.quran.isReview) {
+        const { surah, startVerse, endVerse } = task.quran;
+        
+        if (!surahProgress[surah]) {
+          surahProgress[surah] = [];
+        }
+        
+        // Add all verses to the array
+        for (let i = startVerse; i <= endVerse; i++) {
+          if (!surahProgress[surah].includes(i)) {
+            surahProgress[surah].push(i);
+          }
+        }
+      }
+    });
+    
+    // Find the surah with the most verses
+    let maxSurah = "";
+    let maxVerses = 0;
+    
+    for (const [surah, verses] of Object.entries(surahProgress)) {
+      if (verses.length > maxVerses) {
+        maxSurah = surah;
+        maxVerses = verses.length;
+      }
+    }
+    
+    if (maxVerses > 0) {
+      setQuranSummary({
+        surah: maxSurah,
+        totalVerses: maxVerses
+      });
+    }
+  };
   
   useEffect(() => {
     let result = tasks;
@@ -198,7 +244,20 @@ const TasksPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">All Tasks</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <h1 className="text-3xl font-bold">All Tasks</h1>
+          
+          {quranSummary && (
+            <Button 
+              variant="outline"
+              className="flex items-center gap-2 bg-quran/10 text-quran hover:bg-quran/20"
+              onClick={() => setIsQuranSheetOpen(true)}
+            >
+              <BookOpen className="h-4 w-4" />
+              <span>Quran Progress: {quranSummary.totalVerses} verses</span>
+            </Button>
+          )}
+        </div>
         
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -237,6 +296,9 @@ const TasksPage = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Study Session</DialogTitle>
+              <DialogDescription>
+                Make changes to your study session below.
+              </DialogDescription>
             </DialogHeader>
             <StudyTracker 
               studySession={editingStudySession} 
@@ -244,6 +306,63 @@ const TasksPage = () => {
             />
           </DialogContent>
         </Dialog>
+
+        <Sheet open={isQuranSheetOpen} onOpenChange={setIsQuranSheetOpen}>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Your Quran Progress</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-4 mt-6">
+              {quranSummary && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-quran/10 rounded-md">
+                    <h3 className="text-xl font-medium text-quran mb-2">Total Progress</h3>
+                    <p>You have memorized <strong>{quranSummary.totalVerses} verses</strong> from <strong>{quranSummary.surah}</strong>!</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium">Daily Progress:</h3>
+                    <ul className="space-y-2">
+                      {tasks
+                        .filter(task => task.quran && !task.quran.isReview)
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map(task => (
+                          <li key={task.date} className="flex justify-between items-center border-b pb-2">
+                            <div>
+                              <span className="font-medium">{format(new Date(task.date), "MMM d")}:</span> {task.quran?.surah} {task.quran?.startVerse}-{task.quran?.endVerse}
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {task.quran ? (task.quran.endVerse - task.quran.startVerse + 1) : 0} verses
+                            </span>
+                          </li>
+                        ))
+                      }
+                    </ul>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium">Reviews:</h3>
+                    <ul className="space-y-2">
+                      {tasks
+                        .filter(task => task.quran?.isReview)
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map(task => (
+                          <li key={`review-${task.date}`} className="flex justify-between items-center border-b pb-2">
+                            <div>
+                              <span className="font-medium">{format(new Date(task.date), "MMM d")}:</span> {task.quran?.surah} {task.quran?.startVerse}-{task.quran?.endVerse}
+                            </div>
+                            <span className="text-sm text-quran">Review</span>
+                          </li>
+                        ))
+                      }
+                    </ul>
+                  </div>
+                </div>
+              )}
+              <Button className="w-full mt-4" onClick={() => setIsQuranSheetOpen(false)}>Close</Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </Layout>
   );
