@@ -6,13 +6,14 @@ export interface SurahInfo {
   versesCount: number;
 }
 
-// List of surahs in the Quran with their Arabic names, English names, and verse counts
+// List of surahs in the Quran with their Arabic names, English names, 
+// and verse counts according to Warsh recitation method
 export const surahs: SurahInfo[] = [
   { number: 1, name: "الفاتحة", englishName: "Al-Fatihah", versesCount: 7 },
   { number: 2, name: "البقرة", englishName: "Al-Baqarah", versesCount: 286 },
   { number: 3, name: "آل عمران", englishName: "Ali 'Imran", versesCount: 200 },
   { number: 4, name: "النساء", englishName: "An-Nisa", versesCount: 176 },
-  { number: 5, name: "المائدة", englishName: "Al-Ma'idah", versesCount: 120 },
+  { number: 5, name: "المائدة", englishName: "Al-Ma'idah", versesCount: 122 }, // Warsh: 122 verses (Hafs: 120)
   { number: 6, name: "الأنعام", englishName: "Al-An'am", versesCount: 165 },
   { number: 7, name: "الأعراف", englishName: "Al-A'raf", versesCount: 206 },
   { number: 8, name: "الأنفال", englishName: "Al-Anfal", versesCount: 75 },
@@ -24,10 +25,20 @@ export const surahs: SurahInfo[] = [
   { number: 14, name: "إبراهيم", englishName: "Ibrahim", versesCount: 52 },
   { number: 15, name: "الحجر", englishName: "Al-Hijr", versesCount: 99 },
   { number: 16, name: "النحل", englishName: "An-Nahl", versesCount: 128 },
-  { number: 17, name: "الإسراء", englishName: "Al-Isra", versesCount: 111 },
+  { number: 17, name: "الإسراء", englishName: "Al-Isra", versesCount: 110 }, // Warsh: 110 verses (Hafs: 111)
   { number: 18, name: "الكهف", englishName: "Al-Kahf", versesCount: 110 },
   { number: 19, name: "مريم", englishName: "Maryam", versesCount: 98 },
-  { number: 20, name: "طه", englishName: "Ta-Ha", versesCount: 135 }
+  { number: 20, name: "طه", englishName: "Ta-Ha", versesCount: 134 }, // Warsh: 134 verses (Hafs: 135)
+  { number: 21, name: "الأنبياء", englishName: "Al-Anbya", versesCount: 112 },
+  { number: 22, name: "الحج", englishName: "Al-Hajj", versesCount: 78 },
+  { number: 23, name: "المؤمنون", englishName: "Al-Mu'minun", versesCount: 118 },
+  { number: 24, name: "النور", englishName: "An-Nur", versesCount: 64 },
+  { number: 25, name: "الفرقان", englishName: "Al-Furqan", versesCount: 77 },
+  { number: 26, name: "الشعراء", englishName: "Ash-Shu'ara", versesCount: 227 },
+  { number: 27, name: "النمل", englishName: "An-Naml", versesCount: 93 },
+  { number: 28, name: "القصص", englishName: "Al-Qasas", versesCount: 88 },
+  { number: 29, name: "العنكبوت", englishName: "Al-'Ankabut", versesCount: 69 },
+  { number: 30, name: "الروم", englishName: "Ar-Rum", versesCount: 60 }
 ];
 
 // Get a list of memorized verses for a particular surah
