@@ -82,6 +82,11 @@ const TasksPage = () => {
     });
   };
   
+  const handleEditTask = (task: DailyTask) => {
+    // Navigate to the main page with the selected date
+    window.location.href = `/?date=${task.date}`;
+  };
+  
   const getMoodEmojiIcon = (mood: MoodType | null): string => {
     if (!mood) return '';
     
@@ -168,11 +173,10 @@ const TasksPage = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => {
-                  window.location.href = `/?date=${task.date}`;
-                }}
+                className="flex items-center gap-2"
+                onClick={() => handleEditTask(task)}
               >
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="h-4 w-4" />
                 Edit All Entries
               </Button>
             </div>
